@@ -46,11 +46,13 @@ func TestEnable(t *testing.T) {
 func TestFire(t *testing.T) {
   provider := NewProvider("golang", "dtrace")
 
+  probe1 := provider.AddProbe("Probe", "1")
   probe2 := provider.AddProbe("Probe", "2", reflect.Int)
   probe3 := provider.AddProbe("Probe", "3", reflect.Int, reflect.String)
 
   provider.Enable()
 
+  probe1.fire()
   probe2.fire(1)
   probe3.fire(1, "lasers!")
 }

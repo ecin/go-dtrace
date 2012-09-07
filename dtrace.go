@@ -59,7 +59,7 @@ func (provider *Provider) AddProbe(function string, name string, signature ...re
   defer C.free(unsafe.Pointer(cFunction))
   defer C.free(unsafe.Pointer(cName))
 
-  cTypes := make([]*C.char, len(signature))
+  cTypes := make([]*C.char, len(signature) + 1)
 
   for i, kind := range signature {
     switch kind {
@@ -112,7 +112,7 @@ func (provider Provider) IsEnabled() bool {
 // Could use reflect package to throw ArgumentError
 // if args don't match the probe's probedef
 func (probe Probe) fire(args ...interface{}) {
-  nargv := make([]unsafe.Pointer, len(args))
+  nargv := make([]unsafe.Pointer, len(args) + 1)
   argc := probe.probedef_t.argc
 
   for i, arg := range args {
