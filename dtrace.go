@@ -13,6 +13,7 @@ cc -dynamiclib -install_name /usr/local/lib/libusdt.dylib -flat_namespace -o lib
 import "C"
 import "unsafe"
 import "reflect"
+import "fmt"
 
 type Probe struct {
   Function string
@@ -34,6 +35,14 @@ type Error struct {
 */
 
 
+func (provider Provider) Error() (errMsg string) {
+  errMsg = C.GoString(provider.provider_t.error)
+  if (errMsg != "") {
+    errMsg = fmt.Sprintf("dtrace: [%s] %s", provider.String(), errMsg)
+  }
+
+  return
+}
 
 func NewProvider(name string, module string) (provider *Provider) {
   cName := C.CString(name)
@@ -51,6 +60,10 @@ func NewProvider(name string, module string) (provider *Provider) {
   }
 
   return
+}
+
+func (provider Provider) String() string {
+  return fmt.Sprintf("%s:%s", provider.Name, provider.Module)
 }
 
 func (provider *Provider) AddProbe(function string, name string, signature ...reflect.Kind) Probe {
@@ -101,8 +114,12 @@ func (probe Probe) IsEnabled() (enabled bool) {
 }
 
 // Missing error handling
-func (provider Provider) Enable() {
-  C.usdt_provider_enable(provider.provider_t)
+func (provider Provider) Enable() (err error) {
+  errCode := C.usdt_provider_enable(provider.provider_t)
+  if errCode != 0 {
+    err = provider
+  }
+  return
 }
 
 func (provider Provider) IsEnabled() bool {

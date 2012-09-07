@@ -41,6 +41,18 @@ func TestEnable(t *testing.T) {
   if !provider.IsEnabled() {
     t.Error("Couldn't enable Provider")
   }
+
+
+  if provider.Error() != "" {
+    println(provider.Error())
+    t.Error("Error enabling valid provider")
+  }
+
+  provider.Enable()
+
+  if provider.Error() == "" {
+    t.Error("Didn't get a non-fatal error when enabling an already enabled provider")
+  }
 }
 
 func TestFire(t *testing.T) {
