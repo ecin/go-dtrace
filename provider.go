@@ -13,13 +13,8 @@ cc -dynamiclib -install_name /usr/local/lib/libusdt.dylib -flat_namespace -o lib
 import "C"
 import "unsafe"
 import "reflect"
+import "errors"
 import "fmt"
-
-type Probe struct {
-  Function string
-  Name string
-  probedef_t *C.usdt_probedef_t
-}
 
 type Provider struct {
   Name string
@@ -27,13 +22,6 @@ type Provider struct {
   Probes []Probe
   provider_t *C.usdt_provider_t
 }
-/*
-// Probably look into defining new errors in Go
-type Error struct {
-
-}
-*/
-
 
 func (provider Provider) Error() (errMsg string) {
   errMsg = C.GoString(provider.provider_t.error)
@@ -42,6 +30,10 @@ func (provider Provider) Error() (errMsg string) {
   }
 
   return
+}
+
+func (provider Provider) String() string {
+  return fmt.Sprintf("%s:%s", provider.Name, provider.Module)
 }
 
 func NewProvider(name string, module string) (provider *Provider) {
@@ -60,10 +52,6 @@ func NewProvider(name string, module string) (provider *Provider) {
   }
 
   return
-}
-
-func (provider Provider) String() string {
-  return fmt.Sprintf("%s:%s", provider.Name, provider.Module)
 }
 
 func (provider *Provider) AddProbe(function string, name string, signature ...reflect.Kind) Probe {
@@ -101,53 +89,14 @@ func (provider *Provider) AddProbe(function string, name string, signature ...re
   return newProbe
 }
 
-func (probe Probe) IsEnabled() (enabled bool) {
-  cProbe := (*C.usdt_probe_t)(probe.probedef_t.probe)
-
-  if C.int(C.usdt_is_enabled(cProbe)) == 1 {
-    enabled = true
-  } else {
-    enabled = false
-  }
-
-  return
-}
-
-// Missing error handling
 func (provider Provider) Enable() (err error) {
   errCode := C.usdt_provider_enable(provider.provider_t)
   if errCode != 0 {
-    err = provider
+    err = errors.New(provider.Error())
   }
   return
 }
 
 func (provider Provider) IsEnabled() bool {
-  return C.int(provider.provider_t.enabled) == 1
-}
-
-// Could use reflect package to throw ArgumentError
-// if args don't match the probe's probedef
-func (probe Probe) fire(args ...interface{}) {
-  nargv := make([]unsafe.Pointer, len(args) + 1)
-  argc := probe.probedef_t.argc
-
-  for i, arg := range args {
-    if i > int(argc) {
-      break
-    }
-
-    switch arg.(type) {
-      case int:
-        x := C.int(arg.(int))
-        nargv[i] = unsafe.Pointer(uintptr(x))
-      case string:
-        nargv[i] = unsafe.Pointer(C.CString(arg.(string)))
-      default:
-        nargv[i] = nil
-    }
-  }
-
-  cProbe := (*C.usdt_probe_t)(probe.probedef_t.probe)
-  C.usdt_fire_probe(cProbe, argc, &nargv[0])
+  return C.int(provider.provider_t.enabled) != 0
 }
