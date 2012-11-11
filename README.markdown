@@ -1,10 +1,12 @@
-= go-dtrace
+go-dtrace
+=========
 
 If you want to fire DTrace probes from within your Go program,
 go-dtrace is for you. It wraps libusdt to provide DTrace probe
 definition in go.
 
-== compiling libusdt
+compiling libusdt
+-----------------
 
 In order to use go-dtrace, *libusdt* needs to be compiled as a shared
 library. To achieve this in Mac OS X:
@@ -19,13 +21,15 @@ library. To achieve this in Mac OS X:
 
 Have instructions for another OS? Add 'em here!
 
-== go install
+go install
+-------------
 
 Once *libusdt* is installed, you can install go-dtrace from the command line:
 
 - `$ go get github.com/ecin/go-dtrace`
 
-== example
+example
+-------
 
 ```go
 package main
