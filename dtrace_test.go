@@ -73,9 +73,9 @@ func TestFire(t *testing.T) {
 
   provider.Enable()
 
-  probe1.fire()
-  probe2.fire(1)
-  probe3.fire(1, "lasers!")
+  probe1.Fire()
+  probe2.Fire(1)
+  probe3.Fire(1, "lasers!")
 }
 
 func TestString(t *testing.T) {

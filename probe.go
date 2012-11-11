@@ -33,7 +33,7 @@ func (probe Probe) IsEnabled() (enabled bool) {
 
 // Could use reflect package to throw ArgumentError
 // if args don't match the probe's probedef
-func (probe Probe) fire(args ...interface{}) {
+func (probe Probe) Fire(args ...interface{}) {
   nargv := make([]unsafe.Pointer, len(args) + 1)
   argc := probe.probedef_t.argc
 
